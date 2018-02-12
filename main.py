@@ -46,16 +46,52 @@ class Plots:
     def __init__(self):
         self.u = Utility()
 
-    def get_small_angle_oscillations(self, simulation_time):
-        #Set G=0 (forcing). Second argument is damping, also 0
-        ts,coords,energy = self.u.pendulum_damped([0.01,0.0],0,simulation_time=simulation_time,G=0)
-        plt.plot(ts,coords[:,0])
+    def get_harmonic_angle(self, time):
+        theta_0 = 0.01
+        frequency = 1  # g=1, l=1
+        return theta_0 * np.cos(frequency * time)
+
+    def get_small_angle_oscillations(self):
+        # Set G=0 (forcing). Second argument is damping, also 0
+        # Get graphs for 10, 100, 1000 seconds
+        ts10, coords10, energy10 = self.u.pendulum_damped([0.01, 0.0], 0, simulation_time=10, G=0)
+        ts100, coords100, energy100 = self.u.pendulum_damped([0.01, 0.0], 0, simulation_time=100, G=0)
+        ts1000, coords1000, energy1000 = self.u.pendulum_damped([0.01, 0.0], 0, simulation_time=1000, G=0)
+
+        # Theoretical result for small-angle oscillations (no damping):
+        # theta(t) = theta(0)*cos(wt)
+        # theta(0) = theta_0 = 0.1
+
+        time_theory = np.linspace(0, 1000, len(ts1000))
+        theta_getter = np.vectorize(self.get_harmonic_angle)
+        thetas = theta_getter(time_theory)
+
+        f, (ax1000, ax_theory) = plt.subplots(2, sharex=True, sharey=True)
+        ax1000.plot(ts1000, coords1000[:, 0], label="1000 periods sim")
+        ax_theory.plot(time_theory, thetas, color="orange", label="Theoretical")
+        ax1000.legend(loc="best")
+        ax_theory.legend(loc="best")
+        f.subplots_adjust(hspace=0)
         plt.show()
         
+    def get_energy_plot(self):
+        ts,coords,energy = self.u.pendulum_damped([0.01, 0.0], 0, simulation_time=100, G=0)
+        plt.title("Energy evolution in time")
+        plt.xlabel("time / s")
+        plt.ylabel("energy / J")
+        plt.plot(ts[:500],energy[:500])
+        plt.text(ts[200], energy[50], "Error due to integrator.\nEnergy should be conserved otherwise")
+        plt.show()
+        # Error in rk4 algorithm
+
+    def get_period_vs_amplitude(self):
+        ts,coords,energy = self.u.pendulum_damped([0.01, 0.0], 0, simulation_time=100, G=0)
+        fft_angles = np.fft.fft(coords[:, 0])
+        plt.plot(ts, fft_angles)
 
 def main():
     p = Plots()
-    p.get_small_angle_oscillations(3000)
+    p.get_energy_plot()
 
 if __name__ == "__main__":
     main()
