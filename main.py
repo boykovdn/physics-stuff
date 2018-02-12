@@ -85,13 +85,26 @@ class Plots:
         # Error in rk4 algorithm
 
     def get_period_vs_amplitude(self):
-        ts,coords,energy = self.u.pendulum_damped([0.01, 0.0], 0, simulation_time=100, G=0)
-        fft_angles = np.fft.fft(coords[:, 0])
-        plt.plot(ts, fft_angles)
+        amplitudes = np.linspace(0,2,40)
+        for a in amplitudes:
+            ts,coords,energy = self.u.pendulum_damped([a,0.0], 0, simulation_time=12, G=0)
+
+        #fft_angles = np.fft.fft(coords[:, 0])
+        #fft_angles_abs = np.abs(fft_angles)[:int(len(fft_angles)/2)]
+        #ts = ts[:int(len(ts)/2)]
+        #plt.plot(ts, fft_angles_abs)
+        #plt.show()
+
+    def get_period_index(self, velocities):
+        for i in range(10, len(velocities)-1):
+            if velocities[i] * velocities[i+1] < 0:
+                return i
+        else:
+            print("Problem with finding period from amplitude values")
 
 def main():
     p = Plots()
-    p.get_energy_plot()
+    p.get_period_vs_amplitude()
 
 if __name__ == "__main__":
     main()
