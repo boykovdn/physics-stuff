@@ -83,11 +83,12 @@ class Plots:
         plt.show()
         # Error in rk4 algorithm
 
+    # Period for Theta=pi/2 is roughly 3.7 seconds.
     def get_period_vs_amplitude(self):
-        amplitudes = np.linspace(0.01, 2, 40) # Start from 0.01 because for 0 we get no motion
+        amplitudes = np.linspace(0.01, np.pi-0.001, 400) # Start from 0.01 because for 0 there is no motion
         velocities = []
         for a in amplitudes:
-            ts, coords, energy = self.u.pendulum_damped([a,0.0], 0, simulation_time=12, G=0)
+            ts, coords, energy = self.u.pendulum_damped([a,0.0], 0, simulation_time=40, G=0)
             velocities.append(coords[:, 1])
 
         period_indices = []
@@ -99,7 +100,11 @@ class Plots:
         for i in period_indices:
             periods.append(ts[i])
 
-        plt.scatter(amplitudes,periods)
+        plt.scatter(amplitudes, periods, s=4)
+        plt.ylabel("Period")
+        plt.xlabel("Amplitude")
+        plt.title("Period change as amplitude gets large")
+        plt.text(x=0.1, y=14, s="Simulation stops at pi-0.001. Getting closer to\npi requires higher simulation times, since the pendulum\nis much slower to go down.")
         plt.show()
 
         #fft_angles = np.fft.fft(coords[:, 0])
