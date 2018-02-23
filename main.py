@@ -144,9 +144,22 @@ class Plots:
         plt.legend()
         plt.show()
 
+    def chaos_plot(self):
+        t_sim = 10000
+        ts0,coords0, energy0 = self.u.pendulum_damped([0.2, 0], 0, G=1.2, simulation_time=t_sim)
+        ts1,coords1, energy1 = self.u.pendulum_damped([0.20001, 0], 0, G=1.2, simulation_time=t_sim,)
+        plt.plot(ts0, coords0[:, 1], label="theta=0.2")
+        plt.plot(ts1, coords1[:, 1], label="theta=0.20001")
+        plt.xlabel("time")
+        plt.ylabel("Angular velocity")
+        plt.title("Initial conditions sensitivity test")
+        plt.text(x=47.6, y=3.7, s="divergence point")
+        plt.legend()
+        plt.show()
+
 def main():
     p = Plots()
-    p.damping_forced_plot([0.5, 1.2, 1.44, 1.465])
+    p.chaos_plot()
 
 if __name__ == "__main__":
     main()
