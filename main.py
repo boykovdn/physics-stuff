@@ -24,7 +24,6 @@ class Utility():
         func = lambda coords, t : [coords[1],(-c)*np.sin(coords[0]) + ((-q)*coords[1]) + (F*np.sin(omega_D*t))] #Returns [ddt_y0(t), ddt_y1(t)] to be passed to integrator
         ts = np.linspace(0,simulation_time,simulation_time/timestep)
         ans = scipy.integrate.odeint(func,coordinates,ts)
-        print(ans)        
 
         energy = (np.power(ans[:,1],2)*0.5*mass*np.power(length,2)) + (length*mass*self.g*(1-np.cos(ans[:,0])))
 
@@ -85,9 +84,23 @@ class Plots:
         # Error in rk4 algorithm
 
     def get_period_vs_amplitude(self):
-        amplitudes = np.linspace(0,2,40)
+        amplitudes = np.linspace(0.01, 2, 40) # Start from 0.01 because for 0 we get no motion
+        velocities = []
         for a in amplitudes:
-            ts,coords,energy = self.u.pendulum_damped([a,0.0], 0, simulation_time=12, G=0)
+            ts, coords, energy = self.u.pendulum_damped([a,0.0], 0, simulation_time=12, G=0)
+            velocities.append(coords[:, 1])
+
+        period_indices = []
+        print(period_indices)
+        for v in velocities:
+            period_indices.append(self.get_period_index(v))
+
+        periods = []
+        for i in period_indices:
+            periods.append(ts[i])
+
+        plt.scatter(amplitudes,periods)
+        plt.show()
 
         #fft_angles = np.fft.fft(coords[:, 0])
         #fft_angles_abs = np.abs(fft_angles)[:int(len(fft_angles)/2)]
@@ -96,7 +109,7 @@ class Plots:
         #plt.show()
 
     def get_period_index(self, velocities):
-        for i in range(10, len(velocities)-1):
+        for i in range(1, len(velocities)-1):
             if velocities[i] * velocities[i+1] < 0:
                 return i
         else:
