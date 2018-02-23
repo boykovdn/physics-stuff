@@ -131,7 +131,7 @@ class Plots:
         plt.legend()
         plt.show()
 
-    def damping_forced_plot(self, forcings_list):
+    def damping_forced_velocity(self, forcings_list):
         for f in forcings_list:
             ts, coords, energy = self.u.pendulum_damped([0.5,0], 0.5, G=f) # q = 0.5, constant
             plt.plot(ts, coords[:, 1], label=("F="+str(f)))
@@ -141,6 +141,17 @@ class Plots:
         plt.title("Damped oscillator, different forcing")
         plt.text(x=0.2, y=-2.5, s="Period is constant. Response is a superposition\nof the transient and forced solution with"
                              "different periods.")
+        plt.legend()
+        plt.show()
+
+    def damping_forced_angle(self, forcings_list):
+        for f in forcings_list:
+            ts, coords, energy = self.u.pendulum_damped([0.5, 0], 0.5, G=f)  # q = 0.5, constant
+            plt.plot(ts, coords[:, 0], label=("F=" + str(f)))
+
+        plt.xlabel("time")
+        plt.ylabel("Angle")
+        plt.title("Damped oscillator, different forcing")
         plt.legend()
         plt.show()
 
@@ -157,9 +168,17 @@ class Plots:
         plt.legend()
         plt.show()
 
+    def chaos_angle_velocity(self):
+        t_sim = 100
+        ts, coords, energy = self.u.pendulum_damped([0.011, 0], 0, G=0, simulation_time=t_sim)
+        ts1, coords1, energy = self.u.pendulum_damped([0.01, 0], 0, G=1, simulation_time=t_sim)
+        plt.plot(coords[:, 0], coords[:, 1])
+        plt.plot(coords1[:, 0], coords1[:, 1])
+        plt.show()
+
 def main():
     p = Plots()
-    p.chaos_plot()
+    p.chaos_angle_velocity()
 
 if __name__ == "__main__":
     main()
