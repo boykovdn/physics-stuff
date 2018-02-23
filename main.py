@@ -131,9 +131,22 @@ class Plots:
         plt.legend()
         plt.show()
 
+    def damping_forced_plot(self, forcings_list):
+        for f in forcings_list:
+            ts, coords, energy = self.u.pendulum_damped([0.5,0], 0.5, G=f) # q = 0.5, constant
+            plt.plot(ts, coords[:, 1], label=("F="+str(f)))
+
+        plt.xlabel("time")
+        plt.ylabel("Angular velocity")
+        plt.title("Damped oscillator, different forcing")
+        plt.text(x=0.2, y=-2.5, s="Period is constant. Response is a superposition\nof the transient and forced solution with"
+                             "different periods.")
+        plt.legend()
+        plt.show()
+
 def main():
     p = Plots()
-    p.damping_plot([0.1,0.5,1])
+    p.damping_forced_plot([0.5, 1.2, 1.44, 1.465])
 
 if __name__ == "__main__":
     main()
