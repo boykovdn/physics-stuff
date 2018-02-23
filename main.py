@@ -120,9 +120,20 @@ class Plots:
         else:
             print("Problem with finding period from amplitude values")
 
+    def damping_plot(self, dampings_list):
+        for q in dampings_list:
+            ts, coords, energy = self.u.pendulum_damped([0.5, 0], q, simulation_time=50, G=0)
+            plt.plot(ts, coords[:, 1], label=("q="+str(q)))
+
+        plt.xlabel("time")
+        plt.ylabel("Angular velocity")
+        plt.title("Damped oscillator")
+        plt.legend()
+        plt.show()
+
 def main():
     p = Plots()
-    p.get_period_vs_amplitude()
+    p.damping_plot([0.1,0.5,1])
 
 if __name__ == "__main__":
     main()
