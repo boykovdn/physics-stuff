@@ -23,26 +23,50 @@ class Aperture:
         for i in range(0, M):
             self.aperture_values[i - int(M/2)] = 1
 
+    def populate_aperturevalues_grating(self, gratingwidth):
+        m = 8
+        s = 100e-6
+
+        fun = lambda x: np.exp((m / 2) * np.sin(2 * np.pi * x / s) * 1j)
+        f_vect = np.vectorize(fun)
+
+        vals = np.linspace(0, len(self.aperture_values), gratingwidth/self.delta)
+        vals = f_vect(vals)
+        print(vals.shape)
+
+        middle_index = int(len(self.aperture_values)/2)
+        self.aperture_values[middle_index - int(len(vals)/2) : middle_index - int(len(vals)/2) + len(vals)] = vals
+
 class Utility:
     def __init__(self):
         pass
 
     def get_fft_plot(self, a):
         """ INPUT: aperture object """
-        screen_width = a.width
         fft_values = np.fft.fft(a.aperture_values)
-        ks = np.linspace(0, screen_width, len(a.aperture_values)) # Use aperture dimension for scaling screen
 
-        plt.plot(ks, np.fft.fftshift(fft_values)) # FFT reverses pattern through the middle
-        plt.ylabel("Amplitude strength")
+        # Make scaled x axis
+        wavelength = 500e-9
+        d = 100e-6
+        D = 1
+        L = 5e-3
+        screen_width = a.width
+
+        ns = np.linspace(0, len(a.aperture_values), len(a.aperture_values)) # Use aperture dimension for scaling screen
+        xs_freq = np.fft.fftfreq(a.N, a.delta) * (wavelength * D)
+
+        plt.plot(np.fft.fftshift(xs_freq), np.abs(np.fft.fftshift(fft_values))**2) # FFT reverses pattern through the middle
+        plt.ylabel("Relative intensity (not normalised)")
         plt.xlabel("metres")
         plt.show()
 
+
+
 def main():
-    a = Aperture(0.00001, 10)
+    a = Aperture(1e-2, 10)
     u = Utility()
 
-    a.populate_aperturevalues_smallslit(0.0000001)
+    a.populate_aperturevalues_grating(2e-3)
     u.get_fft_plot(a)
 
 if __name__ == "__main__":
