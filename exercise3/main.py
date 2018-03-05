@@ -20,8 +20,8 @@ class Aperture:
     def populate_aperturevalues_slit(self, slitwidth):
         middle_index = len(self.aperture_values)//2
         M = np.int(slitwidth/self.delta)
-        for i in range(0, M):
-            self.aperture_values[i - int(M/2)] = 1
+        for i in range(-(M // 2), M // 2):
+            self.aperture_values[self.N // 2 + i] = 1
 
     def populate_aperturevalues_grating(self, gratingwidth):
         m = 8
@@ -43,10 +43,12 @@ class Aperture:
         k = (2*np.pi)/wavelength
         D = 5e-3 # As stated for the slit
 
-        middle_index = len(self.aperture_values) // 2
-        M = np.int(slitwidth / self.delta)
-        for i in range(-(M // 2), M // 2):
-            self.aperture_values[i + self.N // 2] = 1
+        self.populate_aperturevalues_slit(slitwidth)
+
+        #middle_index = len(self.aperture_values) // 2
+        #M = np.int(slitwidth / self.delta)
+        #for i in range(-(M // 2), M // 2):
+        #    self.aperture_values[i + self.N // 2] = 1
 
         fun = lambda x : np.exp(1j*(k * np.power(x, 2))/(2 * D))
         fun_vect = np.vectorize(fun)
@@ -56,9 +58,23 @@ class Aperture:
         self.aperture_values = self.aperture_values * phase_values
 
 
-    def populate_aperturevalues_nearfield_grating(self):
-        #TODO
-        pass
+    def populate_aperturevalues_nearfield_grating(self, slitwidth):
+        """ Multiply existing aperture values by the near field phase modification """
+        self.populate_aperturevalues_grating(self, slitwidth)
+
+    def modify_nearfield(self, slitwidth):
+        """ Assume slit is centred in middle and modify by a phase factor """
+
+        wavelength = 500e-9
+        k = (2 * np.pi) / wavelength
+        D = 5e-3  # As stated for the slit
+
+        fun = lambda x: np.exp(1j * (k * np.power(x, 2)) / (2 * D))
+        fun_vect = np.vectorize(fun)
+
+        coords = np.linspace(- self.width / 2, self.width / 2, self.N)
+        phase_values = fun_vect(coords)
+        self.aperture_values = self.aperture_values * phase_values
 
 class Utility:
     def __init__(self):
@@ -89,7 +105,10 @@ def main():
     a = Aperture(3e-2, 17)
     u = Utility()
 
-    a.populate_aperturevalues_nearfield_slit(2e-3)
+    slitwidth = 2e-3
+
+    a.populate_aperturevalues_slit(slitwidth)
+    a.modify_nearfield(slitwidth)
     u.get_fft_plot(a)
 
 if __name__ == "__main__":
