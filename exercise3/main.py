@@ -58,13 +58,12 @@ class Aperture:
         fft_values = np.fft.fft(self.aperture_values)
 
         # Scale x axis
-        # Hardcoded wavelength and distance since they
-
         xs = np.fft.fftfreq(self.N, self.delta) * (wavelength * D)
 
         plt.plot(np.fft.fftshift(xs), np.abs(np.fft.fftshift(fft_values))**2) # FFT reverses pattern through the middle
         plt.ylabel("Relative intensity (not normalised)")
         plt.xlabel("metres")
+        print(xs)
 
 class Utility:
     """ Optional and helper functions. """
@@ -119,6 +118,7 @@ class Utility:
 
         visual_scaling = 1e23
         plt.plot(ys_n, visual_scaling*np.abs(intensity))
+        print(y_length)
 
 def main():
     #a = Aperture(1e-6, 20)
@@ -158,9 +158,8 @@ def main():
     # core1_pattern.png
     a = Aperture(1e-2, 18)
     slitwidth = 1e-4
-    #a.populate_aperturevalues_slit(slitwidth)
-    #a.get_fft_plot()
-    #plt.show()
+    a.populate_aperturevalues_slit(slitwidth)
+    a.get_fft_plot()
 
     u = Utility()
     u.plot_theoretical(a, slitwidth)

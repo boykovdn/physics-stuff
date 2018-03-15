@@ -38,7 +38,7 @@ class Utility():
         results_array[:,2] = values[:,1]
         results_array[:,3] = energy
 
-        np.savetxt(filename,results_array,delimiter=",")
+        np.savetxt(filename,results_array,delimiter=",", header="time,angle,angular-velocity,energy")
         
 class Plots:
     
@@ -53,23 +53,27 @@ class Plots:
     def get_small_angle_oscillations(self):
         # Set G=0 (forcing). Second argument is damping, also 0
         # Get graphs for 10, 100, 1000 seconds
-        ts10, coords10, energy10 = self.u.pendulum_damped([0.01, 0.0], 0, simulation_time=10, G=0)
-        ts100, coords100, energy100 = self.u.pendulum_damped([0.01, 0.0], 0, simulation_time=100, G=0)
-        ts1000, coords1000, energy1000 = self.u.pendulum_damped([0.01, 0.0], 0, simulation_time=1000, G=0)
+        ts10, coords10, energy10 = self.u.pendulum_damped([0.01, 0.0], 0, simulation_time=10*7, G=0)
+        ts100, coords100, energy100 = self.u.pendulum_damped([0.01, 0.0], 0, simulation_time=100*7, G=0)
+        ts1000, coords1000, energy1000 = self.u.pendulum_damped([0.01, 0.0], 0, simulation_time=1000*7, G=0)
 
         # Theoretical result for small-angle oscillations (no damping):
         # theta(t) = theta(0)*cos(wt)
         # theta(0) = theta_0 = 0.1
 
-        time_theory = np.linspace(0, 1000, len(ts1000))
+        time_theory = np.linspace(0, 1000*7, len(ts1000))
         theta_getter = np.vectorize(self.get_harmonic_angle)
         thetas = theta_getter(time_theory)
 
-        f, (ax1000, ax_theory) = plt.subplots(2, sharex=True, sharey=True)
+        f, (ax10, ax100, ax1000, ax_theory) = plt.subplots(4, sharex=True, sharey=True)
+        ax10.plot(ts10, coords10[:, 0], label="10 periods sim")
+        ax100.plot(ts100, coords100[:, 0], label="100 periods sim")
         ax1000.plot(ts1000, coords1000[:, 0], label="1000 periods sim")
         ax_theory.plot(time_theory, thetas, color="orange", label="Theoretical")
-        ax1000.legend(loc="best")
-        ax_theory.legend(loc="best")
+        ax10.legend(loc="best")
+        ax100.legend(loc="best")
+        ax1000.legend(loc="center right")
+        ax_theory.legend(loc="center right")
         f.subplots_adjust(hspace=0)
         plt.show()
         
@@ -161,7 +165,7 @@ class Plots:
         ts1,coords1, energy1 = self.u.pendulum_damped([0.20001, 0], 0, G=1.2, simulation_time=t_sim,)
         plt.plot(ts0, coords0[:, 1], label="theta=0.2")
         plt.plot(ts1, coords1[:, 1], label="theta=0.20001")
-        plt.xlabel("time")
+        plt.xlabel("time / seconds")
         plt.ylabel("Angular velocity")
         plt.title("Initial conditions sensitivity test")
         plt.text(x=47.6, y=3.7, s="divergence point")
@@ -170,13 +174,17 @@ class Plots:
 
     def chaos_angle_velocity(self):
         t_sim = 100
-        ts, coords, energy = self.u.pendulum_damped([0.011, 0], 0, G=0, simulation_time=t_sim)
-        ts1, coords1, energy = self.u.pendulum_damped([0.01, 0], 0, G=1, simulation_time=t_sim)
+        ts, coords, energy = self.u.pendulum_damped([0, 0], 0, G=0.7, simulation_time=t_sim)
+        #ts1, coords1, energy = self.u.pendulum_damped([0.001, 0], 0, G=0.001, simulation_time=t_sim)
         plt.plot(coords[:, 0], coords[:, 1])
-        plt.plot(coords1[:, 0], coords1[:, 1])
+        #plt.plot(coords1[:, 0], coords1[:, 1])
+        plt.title("Phase space evolution of system")
+        plt.ylabel("angle")
+        plt.xlabel("angular velocity")
         plt.show()
 
 def main():
+    u = Utility()
     p = Plots()
     p.chaos_angle_velocity()
 
