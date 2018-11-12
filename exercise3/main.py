@@ -33,17 +33,14 @@ class Aperture:
 
         vals = np.linspace(0, len(self.aperture_values), gratingwidth/self.delta)
         vals = f_vect(vals)
-        print(vals.shape)
 
         middle_index = int(len(self.aperture_values)/2)
         self.aperture_values[middle_index - int(len(vals)/2) : middle_index - int(len(vals)/2) + len(vals)] = vals
 
-    def modify_nearfield(self, slitwidth):
+    def modify_nearfield(self, slitwidth, wavelength, D):
         """ Assume slit is centred in middle and modify values by a phase factor """
 
-        wavelength = 500e-9
         k = (2 * np.pi) / wavelength
-        D = 5e-3  # As stated for the slit
 
         fun = lambda x: np.exp(1j * (k * np.power(x, 2)) / (2 * D))
         fun_vect = np.vectorize(fun)
@@ -63,7 +60,6 @@ class Aperture:
         plt.plot(np.fft.fftshift(xs), np.abs(np.fft.fftshift(fft_values))**2) # FFT reverses pattern through the middle
         plt.ylabel("Relative intensity (not normalised)")
         plt.xlabel("metres")
-        print(xs)
 
 class Utility:
     """ Optional and helper functions. """
@@ -118,7 +114,35 @@ class Utility:
 
         visual_scaling = 1e23
         plt.plot(ys_n, visual_scaling*np.abs(intensity))
-        print(y_length)
+
+def phase_rbc(ys, l=5e-6, wavelength=500e-9):
+    """
+    l is the dimension of the rbc
+    """
+    n_rbc = 1.4 # Refractive index of red blood cell
+
+    arg = lambda y : ((2*np.pi*n_rbc*l)/wavelength)*np.sin((np.pi/l)*y)**2
+    exp_arg = lambda y : np.exp(1j * arg(y))
+    vexp_arg = np.vectorize(exp_arg)
+    phase = vexp_arg(ys)
+
+    return phase
+
+def phase_sphere(ys, l=5e-6, wavelength=500e-9):
+    """
+    l is the radius of the sphere
+    """
+    n_sphere = 1.4 # Refractive index of the sphere
+
+    arg = lambda y : ((4*np.pi*n_sphere*l)/wavelength)*np.sqrt(1-(y/l)**2)
+    exp_arg = lambda y : np.exp(1j * arg(y))
+    vexp_arg = np.vectorize(exp_arg)
+    phase = vexp_arg(ys)
+
+    return phase
+
+   
+
 
 def main():
     #a = Aperture(1e-6, 20)
@@ -147,7 +171,9 @@ def main():
     #u.compile_gif("../../practicals/gif_test/trippy_gif/trippy_diffraction.gif")
 
     wavelength = 500e-9
-    D = 1
+    D = 2e-6 # Distance to imaging plane of microscope
+    N = 19
+    aperture_width = 1e-4
 
     """Core Task 1"""
     # L = 5mm
@@ -156,14 +182,18 @@ def main():
     # wavelength = 500nm
 
     # core1_pattern.png
-    a = Aperture(1e-2, 18)
-    slitwidth = 1e-4
-    a.populate_aperturevalues_slit(slitwidth)
-    a.get_fft_plot()
+    a = Aperture(aperture_width, N)
 
-    u = Utility()
-    u.plot_theoretical(a, slitwidth)
+    l = 5e-6 # Dimension of rbc
+    ys = np.linspace(-l,l,2**N)
+    phase = phase_sphere(ys, l=l, wavelength=wavelength)
+
+    a.set_aperture_values(phase) 
+    #a.modify_nearfield(aperture_width, wavelength, D)
+    a.get_fft_plot()
     plt.show()
+    
+
 
 if __name__ == "__main__":
     main()
